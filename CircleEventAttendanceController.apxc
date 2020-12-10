@@ -1,0 +1,70 @@
+global class CircleEventAttendanceController {
+
+    global class CircleEvent {
+        public String eventName;
+        public Date eventDate;
+        public String eventId;
+    }
+        
+    @RemoteAction
+    global static List<CircleEventAttendanceController.CircleEvent> getEvents() {
+        
+        List<CircleEvent__c> events = [
+            SELECT id, Name, EventDate__c from CircleEvent__c
+            order by EventDate__c desc
+        ];
+        
+        List<CircleEventAttendanceController.CircleEvent> returnList = new List<CircleEventAttendanceController.CircleEvent>();
+        for (CircleEvent__c event : events){
+            CircleEventAttendanceController.CircleEvent returnRecord = new CircleEventAttendanceController.CircleEvent();
+            returnRecord.eventId = event.id;
+            returnRecord.eventName = event.Name;
+            returnRecord.eventDate = event.EventDate__c;
+            
+            returnList.add(returnRecord);
+        }
+        
+        return returnList;
+    }
+    
+    @RemoteAction
+    global static List<CircleEventAttendance__c> getEventAttendance(String eventId) {
+        
+        List<CircleEventAttendance__c> attendances = [
+            SELECT id, Name, UserId__c, UserName__c, ImageUrl__c, DisplayAttendance__c
+            from CircleEventAttendance__c where CircleEvent__c = :eventId
+            order by UserId__c
+        ];
+        
+        return attendances;
+    }
+
+    @RemoteAction
+    global static void registerAttendance(String eventId, String userId, String userName, String imageUrl, boolean isAttend) {
+        
+		CircleEventAttendance__c[] attendances = [
+            SELECT id, UserName__c, ImageUrl__c, Attendance__c
+            from CircleEventAttendance__c where CircleEvent__c = :eventId and UserId__c = :userId
+        ];
+        
+        if (attendances.size() != 0) {
+            CircleEventAttendance__c attendance = attendances[0];
+            attendance.UserName__c = userName;
+            attendance.ImageUrl__c = imageUrl;
+            attendance.Attendance__c = isAttend;
+            
+            update attendance;
+        } else {
+            CircleEventAttendance__c insertAttendance = new CircleEventAttendance__c();
+            insertAttendance.CircleEvent__c = eventId;
+            insertAttendance.UserId__c = userId;
+            insertAttendance.UserName__c = userName;
+            insertAttendance.ImageUrl__c = imageUrl;
+            insertAttendance.Attendance__c = isAttend;
+            
+            insert insertAttendance;
+        }
+        
+    }   
+    
+}

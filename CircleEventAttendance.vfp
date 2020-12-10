@@ -1,0 +1,162 @@
+<apex:page cache="false" showHeader="false" sidebar="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false" controller="CircleEventAttendanceController">
+    
+    <head lang="en">
+        <meta charset="utf-8" />
+        <title>イベント出欠ページ</title>
+        <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
+            crossorigin="anonymous"></link>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+        <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+        <style>
+          .hr{
+            border-top:solid 1px black;
+            padding-top:5px;
+          }            
+        </style>
+    </head>
+    <body>
+        <div id="app" xmlns:v-bind="/" xmlns:v-on="/">
+            <div v-if="mode == 'event'">
+                <div class="container">
+                    <table class="table">
+                      <thead>
+                          <tr>
+                              <th scope="col">イベント名</th>
+                              <th scope="col">日付</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="event_ in events_stores">
+                            <td><a href="javascript:void(0)" v-on:click="gotoAttendance(event_.eventId)">{{event_.eventName}}</a></td>
+                            <td>{{event_.eventDate}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div>
+            </div>
+            <div v-else-if="mode == 'attendance'">
+                <div class="container">
+                    <table class="table">
+                      <thead>
+                          <tr>
+                              <th scope="col">名前</th>
+                              <th scope="col">出欠</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="attendances_ in attendances_stores">
+                            <td><img v-bind:src="attendances_.ImageUrl__c" width="50" height="50" />&nbsp;{{attendances_.UserName__c}}</td>
+                            <td>{{attendances_.DisplayAttendance__c}}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                </div>
+                <div class="hr"></div>
+                <div class="container">
+					<div class="row">
+                        <div class="col">
+                            <button type="button" class="btn btn-primary" v-on:click="register(true)">出席</button>
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-primary" v-on:click="register(false)">欠席</button>                            
+                        </div>
+                        <div class="col">
+                            <button type="button" class="btn btn-secondary">戻る</button>
+                        </div>                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <script>
+          let vm = new Vue({
+              el: '#app',
+              data: {
+                events_stores: [],
+                attendances_stores: [],
+                eventId : "",
+                userId : "",
+                userName : "",
+                imageUrl : "",
+                mode : "event"
+              },
+              created: function() {
+                liff
+                    .init({
+                        liffId: "LIFFのID"
+                    })
+                    .then(() => {
+                        liff.getProfile()
+                            .then(profile => {
+                                vm.userId = profile.userId;
+                                vm.userName = profile.displayName;
+                                vm.imageUrl = profile.pictureUrl;
+                            })
+                            .catch((err) => {
+                                alert("liff getProfile error : " + err);
+                            });                        
+                    })
+                    .catch((err) => {
+                        alert("liff init error : " + err);
+                    });                
+              },
+              mounted: function() {
+                  Visualforce.remoting.Manager.invokeAction(
+                      '{!$RemoteAction.CircleEventAttendanceController.getEvents}',
+                      function (records, event) {
+                          if (event.status) {
+                              if (records) {
+                                  for(let i = 0; i < records.length; i++){
+                                      vm.events_stores.push({eventName : records[i].eventName,
+                                                            eventId : records[i].eventId,
+                                                            eventDate : records[i].eventDate});
+                                  }
+                              }
+                          }
+                      }
+                  );
+              },
+              methods: {
+                  gotoAttendance: function (eventId) {
+                      vm.attendances_stores = [];
+                      vm.mode = "attendance";
+                      vm.eventId = eventId;
+                      Visualforce.remoting.Manager.invokeAction(
+                          '{!$RemoteAction.CircleEventAttendanceController.getEventAttendance}',
+                          eventId,
+                          function (records, event) {
+                              if (event.status) {
+                                  if (records) {
+                                      for(let i = 0; i < records.length; i++){
+                                          vm.attendances_stores.push({ImageUrl__c : records[i].ImageUrl__c,
+                                                                UserName__c : records[i].UserName__c,
+                                                                DisplayAttendance__c : records[i].DisplayAttendance__c});
+                                      }                                      
+                                  }
+                              }
+                          }
+                      );
+                  },
+                  register: function(isAttend) {
+                      Visualforce.remoting.Manager.invokeAction(
+                          '{!$RemoteAction.CircleEventAttendanceController.registerAttendance}',
+                          vm.eventId,
+                          vm.userId,
+                          vm.userName,
+                          vm.imageUrl,
+                          isAttend,
+                          function (records, event) {
+                          	if (event.status) {
+                                vm.gotoAttendance(vm.eventId);                                
+                            } else {
+                                console.log("register error:" + event.message);
+                            }
+                          }
+                      );
+                  }
+              }
+          });
+        </script>        
+    </body>
+</apex:page>
