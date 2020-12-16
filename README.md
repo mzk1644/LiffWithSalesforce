@@ -46,3 +46,11 @@ Apexクラス「CircleEventAttendanceController」を作成してください。
 ソースコードは、
 CircleEventAttendanceController.apxc
 の内容を張り付けてください
+
+#### Visualforceページを設定
+開発者コンソールを開いて、
+Visualforceページ「CircleEventAttendancePage」を作成してください。
+
+ソースコードは、
+CircleEventAttendancePage.vfp
+の内容を張り付けてください
