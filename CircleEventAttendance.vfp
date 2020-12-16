@@ -62,7 +62,7 @@
                             <button type="button" class="btn btn-primary" v-on:click="register(false)">欠席</button>                            
                         </div>
                         <div class="col">
-                            <button type="button" class="btn btn-secondary">戻る</button>
+                            <button type="button" class="btn btn-secondary" v-on:click="back">戻る</button>
                         </div>                        
                     </div>
                 </div>
@@ -154,6 +154,9 @@
                             }
                           }
                       );
+                  },
+		  back : function() {
+                      vm.mode = "event";
                   }
               }
           });
