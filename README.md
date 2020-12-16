@@ -38,3 +38,11 @@ if (Attendance__c == true, "出席", "欠席")
 タブを「常に表示」にしてください。
 
 サークルイベントオブジェクトに、適当な日付とタイトルで、レコードを1件登録してください。
+
+#### コントローラーを設定
+開発者コンソールを開いて、
+Apexクラス「CircleEventAttendanceController」を作成してください。
+
+ソースコードは、
+CircleEventAttendanceController.apxc
+の内容を張り付けてください
