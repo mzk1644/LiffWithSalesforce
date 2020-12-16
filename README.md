@@ -54,3 +54,7 @@ Visualforceページ「CircleEventAttendancePage」を作成してください�
 ソースコードは、
 CircleEventAttendancePage.vfp
 の内容を張り付けてください
+
+#### サイトを設定
+Salesforceの「設定」⇒「サイト」で新規サイトを作成し、
+「CircleEventAttendancePage」を有効なホームページとして設定してください。
