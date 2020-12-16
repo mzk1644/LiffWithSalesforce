@@ -58,3 +58,6 @@ CircleEventAttendancePage.vfp
 #### サイトを設定
 Salesforceの「設定」⇒「サイト」で新規サイトを作成し、
 「CircleEventAttendancePage」を有効なホームページとして設定してください。
+
+サイトの「公開アクセス設定」で表示されるプロファイルに、
+CircleEventAttendanceControllerクラスのアクセス権限を付与してください。
